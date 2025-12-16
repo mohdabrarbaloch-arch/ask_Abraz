@@ -1,7 +1,12 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { API_KEY } from "./config.js";
 
 // Initialize Gemini API
+// Vercel/Vite will inject this
+const API_KEY = import.meta.env.VITE_API_KEY;
+
+if (!API_KEY) {
+    console.error("API Key is missing! Make sure VITE_API_KEY is set in .env or Vercel Settings.");
+}
 const genAI = new GoogleGenerativeAI(API_KEY);
 const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
 

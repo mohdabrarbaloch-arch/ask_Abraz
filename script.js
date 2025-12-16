@@ -1,8 +1,35 @@
+// VISUAL DEBUGGER - Show errors on screen
+window.onerror = function (msg, url, line, col, error) {
+    const chatContainer = document.getElementById('chat-container');
+    if (chatContainer) {
+        const div = document.createElement('div');
+        div.style.background = '#ff4444';
+        div.style.color = 'white';
+        div.style.padding = '10px';
+        div.style.margin = '10px';
+        div.style.borderRadius = '5px';
+        div.innerHTML = `<strong>Critical Error:</strong><br>${msg}<br><small>${url}:${line}</small>`;
+        chatContainer.appendChild(div);
+    }
+    return false;
+};
+
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 // Initialize Gemini API
 // Vercel/Vite will inject this
-const API_KEY = import.meta.env.VITE_API_KEY;
+// Initialize Gemini API
+let API_KEY = "";
+try {
+    // Safe check for Vite environment
+    if (import.meta && import.meta.env) {
+        API_KEY = import.meta.env.VITE_API_KEY;
+    } else {
+        console.warn("import.meta.env is undefined. Application might be running in raw mode.");
+    }
+} catch (err) {
+    console.error("Error accessing env vars:", err);
+}
 
 if (!API_KEY) {
     console.error("API Key is missing! Make sure VITE_API_KEY is set in .env or Vercel Settings.");
@@ -36,28 +63,52 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     async function handleSend() {
+        console.log("Send button clicked"); // DEBUG
         const text = userInput.value.trim();
-        if (!text) return;
+        if (!text) {
+            console.log("Input is empty");
+            return;
+        }
 
         // 1. Add User Message
-        addMessage(text, 'user');
+        try {
+            addMessage(text, 'user');
+        } catch (err) {
+            console.error("Error adding user message:", err);
+            alert("Error in UI: " + err.message);
+            return;
+        }
         userInput.value = '';
 
         // 2. Show Typing Indicator
-        const loadingId = showLoading();
+        let loadingId;
+        try {
+            loadingId = showLoading();
+        } catch (err) {
+            console.error("Error showing loading:", err);
+        }
         scrollToBottom();
 
         // 3. Generate AI Response
         try {
             if (!model) {
-                throw new Error("API Key missing or invalid. Please check Vercel settings.");
+                // Try initializing again just in case
+                if (API_KEY) {
+                    console.log("Re-initializing model...");
+                    genAI = new GoogleGenerativeAI(API_KEY);
+                    model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
+                } else {
+                    throw new Error("API Key missing (VITE_API_KEY). Check Vercel.");
+                }
             }
+            console.log("Calling Gemini API..."); // DEBUG
             const response = await generateGeminiResponse(text);
-            removeLoading(loadingId);
+            console.log("Gemini API responding..."); // DEBUG
+            if (loadingId) removeLoading(loadingId);
             addMessage(response, 'ai');
         } catch (error) {
-            console.error("Error:", error);
-            removeLoading(loadingId);
+            console.error("Gemini Error:", error);
+            if (loadingId) removeLoading(loadingId);
             addMessage(`<div class="chat-section"><p><strong>Error:</strong> ${error.message || error}<br>Maaf kijiye, kuch takneeki kharabi aa gayi hai.</p></div>`, 'ai');
         }
         scrollToBottom();

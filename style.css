@@ -159,7 +159,7 @@ body {
 
 .user-message .content {
     background: var(--primary-gradient);
-    color: #fff;
+    color: #1ac447;
     border-radius: 18px;
     border-top-right-radius: 4px;
 }

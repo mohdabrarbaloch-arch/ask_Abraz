@@ -1,9 +1,12 @@
+import os
 import urllib.request
 import json
 import ssl
+from dotenv import load_dotenv
 
-API_KEY = "AIzaSyCU2efXPYjGcev2-KEM4T1EDeJQJgua5UY"
-MODEL = "gemini-pro"
+load_dotenv()
+API_KEY = os.getenv("API_KEY")
+MODEL = "gemini-flash-latest"
 URL = f"https://generativelanguage.googleapis.com/v1beta/models/{MODEL}:generateContent?key={API_KEY}"
 
 data = {

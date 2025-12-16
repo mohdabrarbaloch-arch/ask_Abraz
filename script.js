@@ -7,8 +7,19 @@ const API_KEY = import.meta.env.VITE_API_KEY;
 if (!API_KEY) {
     console.error("API Key is missing! Make sure VITE_API_KEY is set in .env or Vercel Settings.");
 }
-const genAI = new GoogleGenerativeAI(API_KEY);
-const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
+
+// Global variable, initialized later
+let genAI;
+let model;
+
+try {
+    if (API_KEY) {
+        genAI = new GoogleGenerativeAI(API_KEY);
+        model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
+    }
+} catch (e) {
+    console.error("Failed to initialize Gemini:", e);
+}
 
 document.addEventListener('DOMContentLoaded', () => {
     const chatContainer = document.getElementById('chat-container');
@@ -38,6 +49,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // 3. Generate AI Response
         try {
+            if (!model) {
+                throw new Error("API Key missing or invalid. Please check Vercel settings.");
+            }
             const response = await generateGeminiResponse(text);
             removeLoading(loadingId);
             addMessage(response, 'ai');

@@ -19,10 +19,12 @@ import {
 } from "firebase/firestore";
 
 // ========== GEMINI API SETUP ==========
-let API_KEY = "";
+let API_KEY = "AIzaSyDYfB-Xd6-Y0GeOR8Rz1bhPztU9aEziUJc";
 try {
     if (import.meta && import.meta.env) {
-        API_KEY = import.meta.env.VITE_API_KEY;
+        if (import.meta.env.VITE_API_KEY) {
+            API_KEY = import.meta.env.VITE_API_KEY;
+        }
     }
 } catch (err) {
     console.error("Error accessing env vars:", err);
@@ -32,7 +34,8 @@ let genAI, model;
 try {
     if (API_KEY) {
         genAI = new GoogleGenerativeAI(API_KEY);
-        model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
+        // Updated to latest stable model available in this environment
+        model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
     }
 } catch (e) {
     console.error("Failed to initialize Gemini:", e);
@@ -676,7 +679,7 @@ async function handleSend() {
     try {
         if (!model && API_KEY) {
             genAI = new GoogleGenerativeAI(API_KEY);
-            model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
+            model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
         }
 
         const response = await generateGeminiResponse(text);
@@ -694,7 +697,15 @@ async function handleSend() {
     } catch (error) {
         console.error("Gemini Error:", error);
         removeLoading(loadingId);
-        const errMsg = `<div class="chat-section"><p><strong>Error:</strong> ${error.message}<br>Maaf kijiye, kuch masla aa gaya.</p></div>`;
+
+        let errorText = "Maaf kijiye, kuch masla aa gaya.";
+        if (error.message.includes("429")) {
+            errorText = "Abhi bohat heavy traffic hai (Quota Exceeded). Please thora wait karein aur phir try karein.";
+        } else if (error.message.includes("400") || error.message.includes("API key")) {
+            errorText = "API Key ka masla hai. Please naya key check karein.";
+        }
+
+        const errMsg = `<div class="chat-section"><p><strong>Error:</strong> ${error.message}<br>${errorText}</p></div>`;
         renderMessage(errMsg, 'ai');
     }
 

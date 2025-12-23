@@ -5,15 +5,15 @@ import ssl
 from dotenv import load_dotenv
 
 load_dotenv()
-API_KEY = os.getenv("API_KEY") or os.getenv("VITE_API_KEY")
+API_KEY = "AIzaSyDYfB-Xd6-Y0GeOR8Rz1bhPztU9aEziUJc"
 
 if not API_KEY:
-    print("API_KEY not found in environment!")
+    print("API_KEY not found!")
     exit(1)
 
 print(f"Testing API Key: {API_KEY[:5]}...{API_KEY[-4:]}")
 
-MODEL = "gemini-1.5-flash"
+MODEL = "gemini-2.5-flash"
 URL = f"https://generativelanguage.googleapis.com/v1beta/models/{MODEL}:generateContent?key={API_KEY}"
 
 data = {

@@ -12,6 +12,7 @@
         "vite": "^5.0.0"
     },
     "dependencies": {
-        "@google/generative-ai": "^0.12.0"
+        "@google/generative-ai": "^0.12.0",
+        "firebase": "^12.7.0"
     }
 }
